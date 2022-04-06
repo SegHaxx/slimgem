@@ -32,15 +32,7 @@ int16_t aes_global[15];
 
 int16_t gl_apid;
 
-static void aes(void){
-	__asm__ __volatile__(
-		"move.l %0,d1\n\t"
-		"move.w #200,d0\n\t"
-		"trap #2\n\t"
-		:: "g"(&aespb) :
-		"d0","d1","d2","a0","a1","a2",
-		"memory","cc");
-}
+static void aes(void);
 
 static int16_t crys_if(
 	int16_t opcode,

@@ -12,20 +12,12 @@ typedef struct{
 
 VDIPB pblock;
 int16_t contrl[12];
-int16_t ptsin[1024];
-int16_t ptsout[256];
-int16_t intin[1024];
-int16_t intout[512];
+int16_t ptsin[4];
+int16_t ptsout[1];
+int16_t intin[11];
+int16_t intout[1];
 
-SHL void vdi(void){
-	__asm__ __volatile__(
-		"move.l %0,d1\n\t"
-		"move.w #115,d0\n\t"
-		"trap #2\n\t"
-		:: "g"(&pblock) :
-		"d0","d1","d2","a0","a1","a2",
-		"memory","cc");
-}
+static void vdi(void);
 
 SHL int16_t vdi_if(
 	int16_t opcode,
@@ -39,17 +31,18 @@ SHL int16_t vdi_if(
 	return(ptsout[0]);
 }
 
-SHL void v_pline(int16_t count,int16_t *pxyarray){
+SHL void v_pline(int16_t count,int16_t* px){
 	int16_t* prev=pblock.ptsin;
-	pblock.ptsin=pxyarray;
+	pblock.ptsin=px;
 	vdi_if(6,count,0);
 	pblock.ptsin=prev;
 }
 
-SHL void v_pmarker(int16_t count,int16_t *pxyarray){
-	for(int16_t i=0;i<count*2;++i)
-		ptsin[i] = pxyarray[i];
+SHL void v_pmarker(int16_t count,int16_t* px){
+	int16_t* prev=pblock.ptsin;
+	pblock.ptsin=px;
 	vdi_if(7,count,0);
+	pblock.ptsin=prev;
 }
 
 SHL void v_gtext(int16_t x,int16_t y,char* string){
@@ -131,8 +124,11 @@ SHL void v_opnvwk(
 	pblock.contrl=contrl;
 	pblock.intin =intin;
 	pblock.ptsin =ptsin;
-	pblock.intout=intout;
-	pblock.ptsout=ptsout;
+
+	int16_t l_intout[45];
+	int16_t l_ptsout[12];
+	pblock.intout=l_intout;
+	pblock.ptsout=l_ptsout;
 
 	for(int16_t i=0;i<11;++i){
 		intin[i]=work_in[i];
@@ -140,11 +136,13 @@ SHL void v_opnvwk(
 	contrl[6]=phys_hndl;
 	vdi_if(100,0,11);
 	for(int16_t i=0;i<45;++i){
-		work_out[i]=intout[i];
+		work_out[i]=l_intout[i];
 	}
 	for(int16_t i=0;i<12;++i){
-		work_out[i+45]=ptsout[i];
+		work_out[i+45]=l_ptsout[i];
 	}
+	pblock.intout=intout;
+	pblock.ptsout=ptsout;
 }
 
 SHL void v_clsvwk(void){

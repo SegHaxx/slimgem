@@ -8,8 +8,7 @@ Need a little excitement? Snap into a slim GEM! OOOOH YEAH!!!!
 
 slimgem is designed for use with
 [Thorsten Otto's MiNT gcc toolchain](https://tho-otto.de/crossmint.php) and
-[libcmini](https://github.com/freemint/libcmini). In theory slimgem should work
-with mintlib but currently... does not?
+[libcmini](https://github.com/freemint/libcmini). slimgem can also be used to build for FreeGEM on MS-DOS using Watcom C.
 
 # Using slimgem
 

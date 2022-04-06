@@ -1,11 +1,12 @@
 PREFIX=m68k-atari-mint
+# only 4.x supports -mfastcall
 CC=$(PREFIX)-gcc-4.6.4
 
-CFLAGS=-std=gnu99 -Wall -Wno-unused-value -Os -mshort -mfastcall #-mpcrel
+CFLAGS=-std=gnu99 -Wall -Wno-unused-value -Os -mshort -mfastcall
 
 LIBCMINI_DIR=$(HOME)/src/libcmini/build
 LINK=-nostdlib $(LIBCMINI_DIR)/crt0.o $< -L$(LIBCMINI_DIR)/mshort/mfastcall $(LDFLAGS) -lcmini -lgcc -o $@
-# Use this to link with stock mintlib, but it crashes for me currently
+# NOTE: to use MiNTLib you must remove -mshort and -mfastcall from CFLAGS
 #LINK=$< $(LDFLAGS) -o $@
 
 TARGETS=sample.prg

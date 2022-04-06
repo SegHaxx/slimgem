@@ -10,7 +10,7 @@ int16_t acc_menu_id ;	/* our menu id */
 int16_t wi_handle;	/* window handle */
 int16_t fulled;		/* current state of window */
 
-static char app_name[]="  Slimgem Sample ";
+static const char app_name[]="  Slimgem Sample ";
 
 // your drawing stuff goes here
 static void draw(GRECT* w){
@@ -139,12 +139,12 @@ static int window_handle_event(int16_t* msg){
 
 static void open_vwork(){
 	int16_t dummy;
-	int phys_handle=graf_handle(&dummy,&dummy,&gl_wbox,&gl_hbox);
+	int16_t phys_handle=graf_handle(&dummy,&dummy,&gl_wbox,&gl_hbox);
 
-	int work_in[11];
-	for(int i=0;i<10;work_in[i++]=1);
+	int16_t work_in[11];
+	for(int16_t i=0;i<10;work_in[i++]=1);
 	work_in[10]=2;
-	int work_out[57];
+	int16_t work_out[57];
 	v_opnvwk(work_in,work_out,phys_handle);
 }
 
@@ -173,8 +173,8 @@ static void handle_aes_events(){
 	EVMULT_OUT out={0};
 	in.emi_flags=MU_MESAG;
 	while(1){
-		int msg[8];
-		int event=evnt_multi_fast(&in,msg,&out);
+		int16_t msg[8];
+		int16_t event=evnt_multi_fast(&in,msg,&out);
 		wind_update(true);
 		//if(event & MU_MESAG){
 			if(msg[3]==wi_handle)
