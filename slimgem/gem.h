@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __GNUC__ // shut up gcc
 #define SHL static __attribute__((__unused__))
@@ -10,6 +11,20 @@ typedef struct{
 	int16_t x;
 	int16_t y;
 } PXY;
+
+// handy dandy int16x4 copy, using this saves some code size
+#if defined(__GNUC__) && defined(__OPTIMIZE_SIZE__)
+__attribute__ ((noinline)) // no gcc don't inline it
+#endif
+SHL void copy_i16x4(const void* src,void* dst){
+	int32_t* s=(int32_t*)src;
+	int32_t* d=(int32_t*)dst;
+	int32_t t0,t1;
+	t0=s[0];
+	t1=s[1];
+	d[0]=t0;
+	d[1]=t1;
+}
 
 #include "aes.h"
 #include "vdi.h"
@@ -24,7 +39,7 @@ typedef struct{
 #ifdef __MINT__
 extern int16_t _app;
 #else
-static int16_t _app=1;
+#define _app 1
 #endif
 
 // Misc utils

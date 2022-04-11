@@ -14,3 +14,4 @@ clean:
 sample.app: sample.c
 	$(CC) $(CFLAGS) -mc $< -fe=$@
 	wdis sample.o -l=sample.s
+	@du -b $@

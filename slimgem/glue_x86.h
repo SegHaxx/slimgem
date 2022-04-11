@@ -13,13 +13,12 @@ SHL void vdi(void){vdi_asm(FP_SEG(&pblock),FP_OFF(&pblock));}
 static void aes_asm(unsigned int,unsigned int);
 #pragma aux aes_asm = \
 "mov cx,200 "\
-"xor dx,dx "\
 "int 0xef "\
 modify [ ax cx dx ] \
 parm [ es ] [ bx ];
 SHL void aes(void){aes_asm(FP_SEG(&aespb),FP_OFF(&aespb));}
 
-#else
+#else // vaguely portable code?
 SHL void vdi(void){
 	union REGS r;
 	struct SREGS s;

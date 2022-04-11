@@ -2,6 +2,8 @@ typedef struct{
    int16_t x1,y1,x2,y2;
 } VRECT;
 
+#define vr_copy(s,d) copy_i16x4(s,d);
+
 typedef struct{
 	int16_t* contrl; // Pointer to contrl array
 	int16_t* intin;  // Pointer to intin array
@@ -186,11 +188,11 @@ SHL void vs_clip(int16_t clip_flag,int16_t* px){
 	vdi_if(129,2,1);
 }
 
-SHL void vs_clip_grect(int16_t clip_flag,GRECT* r){
+SHL void vs_clip_grect(int16_t clip_flag,GRECT* gr){
 	intin[0]=clip_flag;
-	ptsin[0]=r->x;
-	ptsin[1]=r->y;
-	ptsin[2]=r->x+r->w-1;
-	ptsin[3]=r->y+r->h-1;
+	ptsin[0]=gr->x;
+	ptsin[1]=gr->y;
+	ptsin[2]=gr->x+gr->w-1;
+	ptsin[3]=gr->y+gr->h-1;
 	vdi_if(129,2,1);
 }

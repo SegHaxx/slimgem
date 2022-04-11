@@ -2,16 +2,38 @@ typedef struct{
 	int16_t x,y,w,h;
 } GRECT;
 
+// copy a GRECT
+#define gr_copy(s,d) copy_i16x4(s,d)
+
+// OBJECT types
+#define G_BOX 20
+#define G_TEXT 21
+#define G_BOXCHAR 27
+
 typedef struct{
-	 int16_t ob_next;
-	 int16_t ob_head;
-	 int16_t ob_tail;
-	uint16_t ob_type;
-	uint16_t ob_flags;
-	uint16_t ob_state;
-	   void* ob_spec;
-	   GRECT ob;
+	 int16_t next;
+	 int16_t head;
+	 int16_t tail;
+	uint16_t type;
+	uint16_t flags;
+	uint16_t state;
+	   void* spec;
+	   GRECT gr;
 } OBJECT;
+
+typedef struct{
+	  char* text;          /* Pointer to a string              */
+	  char* tmplt;         /* Pointer to the string template   */
+	  char* valid;         /* Pointer to the validation string */
+	int16_t font;
+	int16_t fontid;
+	int16_t just;
+	int16_t color;
+	int16_t fontsize;       /* GDOS font size in points         */
+	int16_t thickness;      /* Border width                     */
+	int16_t txtlen;         /* Maximum length of the text       */
+	int16_t tmplen;         /* Length of the string template    */
+} TEDINFO;
 
 typedef struct{
 	int16_t* cb_pcontrol;
@@ -57,7 +79,7 @@ SHL int16_t appl_init(void){
 	aespb.cb_pintout =int_out;
 	aespb.cb_padrin  =addr_in;
 	aespb.cb_padrout =addr_out;
-	control[4]=0;
+	control[4]=0; // num_addr_out never changes
 	gl_apid=crys_if(10,0,1,0);
 	return gl_apid;
 }
@@ -115,12 +137,12 @@ typedef struct {
 } EVMULT_IN;
 
 typedef struct {
-	int16_t emo_events;
-	    PXY emo_mouse;
-	int16_t emo_mbutton;
-	int16_t emo_kmeta;
-	int16_t emo_kreturn;
-	int16_t emo_mclicks;
+	int16_t events;
+	    PXY mouse;
+	int16_t mbutton;
+	int16_t kmeta;
+	int16_t key;
+	int16_t mclicks;
 } EVMULT_OUT;
 
 // evnt_multi flags
@@ -154,7 +176,7 @@ SHL int16_t evnt_multi_fast(
 	crys_if(25,16,7,1);
 	aespb.cb_pintin =prev_intin;
 	aespb.cb_pintout=prev_intout;
-	return em_out->emo_events;
+	return em_out->events;
 }
 
 // Menu Library
@@ -195,11 +217,24 @@ SHL int16_t objc_draw(
 	addr_in[0]=tree;
 	int_in[0]=start;
 	int_in[1]=depth;
-	int_in[2]=clip->x;
-	int_in[3]=clip->y;
-	int_in[4]=clip->w;
-	int_in[5]=clip->h;
+	gr_copy(clip,&int_in[2]);
 	return crys_if(42,6,1,1);
+}
+
+SHL int16_t objc_change(
+	OBJECT* tree,
+	 GRECT* clip,
+	int16_t object,
+	int16_t newstate,
+	int16_t redraw)
+{
+   addr_in[0]=tree;
+   int_in[0]=object;
+   int_in[1]=0;
+	gr_copy(clip,&int_in[2]);
+   int_in[6]=newstate;
+   int_in[7]=redraw;
+	return crys_if(47,8,1,1);
 }
 
 // Form Library
@@ -216,21 +251,15 @@ SHL int16_t form_do(OBJECT* fo_dotree,int16_t fo_dostartob){
 #define FMD_FINISH 3
 
 SHL int16_t form_dial_grect(
-	int16_t fo_diflag,
-	const GRECT* const fo_dilittl,
-	const GRECT* const fo_dibig)
+	int16_t diflag,
+	const GRECT* const dilittl,
+	const GRECT* const dibig)
 {
-	int_in[0]  = fo_diflag;
-	if(fo_dilittl){
-		int_in[1]  = fo_dilittl->x;
-		int_in[2]  = fo_dilittl->y;
-		int_in[3]  = fo_dilittl->w;
-		int_in[4]  = fo_dilittl->h;
+	int_in[0] = diflag;
+	if(dilittl){
+		gr_copy(dilittl,&int_in[1]);
 	}
-	int_in[5]  = fo_dibig->x;
-	int_in[6]  = fo_dibig->y;
-	int_in[7]  = fo_dibig->w;
-	int_in[8]  = fo_dibig->h;
+	gr_copy(dibig,&int_in[5]);
 	return crys_if(51,9,1,1);
 }
 
@@ -256,26 +285,14 @@ SHL int16_t form_center_grect(
 // Graphics Library
 
 SHL int16_t graf_growbox(const GRECT* const start,const GRECT* const end){
-	int_in[0] = start->x;
-	int_in[1] = start->y;
-	int_in[2] = start->w;
-	int_in[3] = start->h;
-	int_in[4] = end->x;
-	int_in[5] = end->y;
-	int_in[6] = end->w;
-	int_in[7] = end->h;
+	gr_copy(start,&int_in[0]);
+	gr_copy(end,&int_in[4]);
 	return crys_if(73,8,1,0);
 }
 
 SHL int16_t graf_shrinkbox(const GRECT* const start,const GRECT* const end){
-	int_in[0] = start->x;
-	int_in[1] = start->y;
-	int_in[2] = start->w;
-	int_in[3] = start->h;
-	int_in[4] = end->x;
-	int_in[5] = end->y;
-	int_in[6] = end->w;
-	int_in[7] = end->h;
+	gr_copy(start,&int_in[0]);
+	gr_copy(end,&int_in[4]);
 	return crys_if(74,8,1,0);
 }
 
@@ -345,19 +362,13 @@ SHL int16_t graf_mouse_set(MFORM* const gr_mofaddr){
 
 SHL int16_t wind_create(int16_t wi_crkind,GRECT* gr){
 	int_in[0]=wi_crkind;
-	int_in[1]=gr->x;
-	int_in[2]=gr->y;
-	int_in[3]=gr->w;
-	int_in[4]=gr->h;
+	gr_copy(gr,&int_in[1]);
 	return crys_if(100,5,1,0);
 }
 
 SHL int16_t wind_open(int16_t handle,const GRECT* const gr){
 	int_in[0]=handle;
-	int_in[1]=gr->x;
-	int_in[2]=gr->y;
-	int_in[3]=gr->w;
-	int_in[4]=gr->h;
+	gr_copy(gr,&int_in[1]);
 	return crys_if(101,5,1,0);
 }
 
@@ -406,10 +417,7 @@ SHL int16_t wind_get_work(int16_t handle,GRECT* gr){
 	int_in[0]=handle;
 	int_in[1]=WF_WORKXYWH;
 	int16_t ret=crys_if(104,2,5,0);
-	gr->x=int_out[1];
-	gr->y=int_out[2];
-	gr->w=int_out[3];
-	gr->h=int_out[4];
+	gr_copy(&int_out[1],gr);
 	return ret;
 }
 
@@ -425,10 +433,7 @@ SHL int16_t wind_get_first(int16_t handle,GRECT* gr){
 	int_in[0]=handle;
 	int_in[1]=WF_FIRSTXYWH;
 	int16_t ret=crys_if(104,2,5,0);
-	gr->x=int_out[1];
-	gr->y=int_out[2];
-	gr->w=int_out[3];
-	gr->h=int_out[4];
+	gr_copy(&int_out[1],gr);
 	return ret;
 }
 
@@ -436,10 +441,7 @@ SHL int16_t wind_get_next(int16_t handle,GRECT* gr){
 	int_in[0]=handle;
 	int_in[1]=WF_NEXTXYWH;
 	int16_t ret=crys_if(104,2,5,0);
-	gr->x=int_out[1];
-	gr->y=int_out[2];
-	gr->w=int_out[3];
-	gr->h=int_out[4];
+	gr_copy(&int_out[1],gr);
 	return ret;
 }
 
@@ -453,10 +455,7 @@ SHL int16_t wind_set_name(int16_t handle,const char* const str){
 SHL int16_t wind_set_current(int16_t handle,const GRECT* const gr){
 	int_in[0]=handle;
 	int_in[1]=WF_CURRXYWH;
-	int_in[2]=gr->x;
-	int_in[3]=gr->y;
-	int_in[4]=gr->w;
-	int_in[5]=gr->h;
+	gr_copy(gr,&int_in[2]);
 	return crys_if(105,6,1,0);
 }
 
@@ -479,15 +478,9 @@ SHL int16_t wind_calc(
 {
 	int_in[0]=wi_ctype;
 	int_in[1]=wi_ckind;
-	int_in[2]=in->x;
-	int_in[3]=in->y;
-	int_in[4]=in->w;
-	int_in[5]=in->h;
+	gr_copy(in,&int_in[2]);
 	int16_t ret=crys_if(108,6,5,0);
-	out->x=int_out[1];
-	out->y=int_out[2];
-	out->w=int_out[3];
-	out->h=int_out[4];
+	gr_copy(&int_out[1],out);
 	return ret;
 }
 
@@ -498,14 +491,18 @@ SHL int16_t rsrc_load(const char* const re_lpfname){
 	return crys_if(110,0,1,1);
 }
 
-#define R_TREE 0 // Object tree
+SHL int16_t rsrc_free(void){
+	return crys_if(111,0,1,0);
+}
 
-SHL int16_t rsrc_gaddr(int16_t re_gtype,int16_t re_gindex,void* gaddr){
+#define R_TREE   0 // object tree
+#define R_OBJECT 1 // single object
+
+SHL void* rsrc_gaddr(int16_t re_gtype,int16_t re_gindex){
 	int_in[0]=re_gtype;
 	int_in[1]=re_gindex;
 	//control[4]=1;
-	int16_t ret=crys_if(112,2,1,0);
+	if(!crys_if(112,2,1,0)) return 0;
 	//control[4]=0;
-	*((void**)gaddr)=(void*)addr_out[0];
-	return ret;
+	return addr_out[0];
 }

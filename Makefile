@@ -23,4 +23,5 @@ sample.prg: sample.c
 	$(CC) $(CFLAGS) $(LINK)
 	$(PREFIX)-objdump -drwC $@ > $@.s
 	$(PREFIX)-strip -s $@
-	$(PREFIX)-size $@
+	@$(PREFIX)-size $@
+	@du -b $@

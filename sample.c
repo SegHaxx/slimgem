@@ -175,7 +175,6 @@ static void handle_aes_events(){
 	while(1){
 		int16_t msg[8];
 		int16_t event=evnt_multi_fast(&in,msg,&out);
-		wind_update(true);
 		//if(event & MU_MESAG){
 			if(msg[3]==wi_handle)
 				if(window_handle_event(msg))
@@ -183,7 +182,6 @@ static void handle_aes_events(){
 
 			if(!_app) accessory_handle_event(msg);
 		//}
-		wind_update(false);
 	}
 }
 
